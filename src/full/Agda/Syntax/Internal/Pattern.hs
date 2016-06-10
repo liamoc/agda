@@ -98,7 +98,7 @@ instance LabelPatVars Pattern DeBruijnPattern Int where
       DotP t       -> DotP t <$ next
       ConP c mt ps -> ConP c mt <$> labelPatVars ps
       LitP l       -> return $ LitP l
-      ProjP q      -> return $ ProjP q
+      ProjP o q    -> return $ ProjP o q
     where next = do (x:xs) <- get; put xs; return x
   unlabelPatVars = fmap dbPatVarName
 
@@ -142,7 +142,7 @@ dbPatPerm ps = Perm (size ixs) <$> picks
     getIndices (ConP c _ ps) = concatMap (getIndices . namedThing . unArg) ps
     getIndices (DotP _)      = [Nothing]
     getIndices (LitP _)      = []
-    getIndices (ProjP _)     = []
+    getIndices ProjP{}       = []
 
 
 -- | Computes the permutation from the clause telescope
@@ -162,7 +162,7 @@ patternToElim (Arg ai (ConP c _ ps)) = Apply $ Arg ai $ Con c $
       map (argFromElim . patternToElim . fmap namedThing) ps
 patternToElim (Arg ai (DotP t)     ) = Apply $ Arg ai t
 patternToElim (Arg ai (LitP l)     ) = Apply $ Arg ai $ Lit l
-patternToElim (Arg ai (ProjP dest) ) = Proj  $ dest
+patternToElim (Arg ai (ProjP o dest)) = Proj o dest
 
 patternsToElims :: [NamedArg DeBruijnPattern] -> [Elim]
 patternsToElims ps = map build ps
@@ -173,7 +173,7 @@ patternsToElims ps = map build ps
 patternToTerm :: DeBruijnPattern -> Term
 patternToTerm p = case patternToElim (defaultArg p) of
   Apply x -> unArg x
-  Proj  f -> __IMPOSSIBLE__
+  Proj{}  -> __IMPOSSIBLE__
 
 class MapNamedArg f where
   mapNamedArg :: (NamedArg a -> NamedArg b) -> NamedArg (f a) -> NamedArg (f b)
