@@ -184,7 +184,7 @@ instance MapNamedArg Pattern' where
       VarP  x     -> map2 VarP $ f $ map2 (const x) np
       DotP  t     -> map2 (const $ DotP t) np  -- just Haskell type conversion
       LitP  l     -> map2 (const $ LitP l) np  -- ditto
-      ProjP q     -> map2 (const $ ProjP q) np -- ditto
+      ProjP o q   -> map2 (const $ ProjP o q) np -- ditto
       ConP c i ps -> map2 (const $ ConP c i $ map (mapNamedArg f) ps) np
     where
     map2 :: (a -> b) -> NamedArg a -> NamedArg b
